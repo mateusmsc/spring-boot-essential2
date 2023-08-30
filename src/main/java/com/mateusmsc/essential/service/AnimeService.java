@@ -6,6 +6,8 @@ import com.mateusmsc.essential.exception.BadRequestException;
 import com.mateusmsc.essential.mapper.AnimeMapper;
 import com.mateusmsc.essential.repository.AnimeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +21,11 @@ public class AnimeService  {
 
     private final AnimeRepository animeRepository;
     private final AnimeMapper animeMapper;
-    public List<Anime> listAll() {
+    public Page<Anime> listAll(Pageable pageable) {
+        return animeRepository.findAll(pageable);
+    }
+
+    public List<Anime> listAllNonPageable() {
         return animeRepository.findAll();
     }
 

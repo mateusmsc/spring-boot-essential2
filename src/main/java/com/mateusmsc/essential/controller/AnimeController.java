@@ -6,6 +6,8 @@ import com.mateusmsc.essential.service.AnimeService;
 import com.mateusmsc.essential.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,10 +26,16 @@ public class AnimeController {
     //usar o final para entrar no "RequiredArgsConstructor"
     private final AnimeService animeService;
 
-    @GetMapping
-    public ResponseEntity<List<Anime>> list() {
+//    @GetMapping
+//    public ResponseEntity<Page<Anime>> list(Pageable pegeable) {
+//        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
+//        return ResponseEntity.ok(animeService.listAll(pegeable));
+//    }
+
+    @GetMapping(path = "/all")
+    public ResponseEntity<List<Anime>> listAll() {
         log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
-        return ResponseEntity.ok(animeService.listAll());
+        return ResponseEntity.ok(animeService.listAllNonPageable());
     }
 
     @GetMapping(path = "/{id}")
