@@ -2,12 +2,12 @@ package com.mateusmsc.essential.service;
 
 import com.mateusmsc.essential.domain.Anime;
 import com.mateusmsc.essential.dto.AnimeDTO;
+import com.mateusmsc.essential.exception.BadRequestException;
 import com.mateusmsc.essential.mapper.AnimeMapper;
 import com.mateusmsc.essential.repository.AnimeRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,11 +23,18 @@ public class AnimeService  {
         return animeRepository.findAll();
     }
 
-    public Anime findByIdOrThrowBadRequestException(long id) {
-        return animeRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Anime not found!"));
+    public List<Anime> findByName(final String name) {
+        return animeRepository.findByName(name);
     }
 
+    public Anime findByIdOrThrowBadRequestException(long id) {
+        return animeRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Anime not found personalizada!"));
+    }
+
+    // O spring não commita a transação enquanto o método não finalizar,
+    // faz o rollback de forma automática.
+    @Transactional
     public Anime save(AnimeDTO animeDTO) {
         Anime anime = animeMapper.toAnime(animeDTO);
 

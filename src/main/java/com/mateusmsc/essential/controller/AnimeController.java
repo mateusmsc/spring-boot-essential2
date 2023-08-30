@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,11 +36,21 @@ public class AnimeController {
         return ResponseEntity.ok(animeService.findByIdOrThrowBadRequestException(id));
     }
 
+    // Exemplo da URL
+    // /animes/findByName?name=Dragon Ball GT
+    @GetMapping(path = "/findByName")
+    public ResponseEntity<List<Anime>> findById(@RequestParam String name) {
+        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
+        return ResponseEntity.ok(animeService.findByName(name));
+    }
+
     //Se o Json estiver com os atributos iguais, ele faz o mapeamento automaticamente
     // - id
     // - name
+    // Com o @Valid ele valida todas as anotation que são colocadas no AnimeDTO
+    // como por exemplo o NotNull
     @PostMapping
-    public ResponseEntity<Anime> save(@RequestBody AnimeDTO anime) {
+    public ResponseEntity<Anime> save(@RequestBody @Valid AnimeDTO anime) {
         return new ResponseEntity<>(animeService.save(anime), HttpStatus.CREATED);
     }
 
