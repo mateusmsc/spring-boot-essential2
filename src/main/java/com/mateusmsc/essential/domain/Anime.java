@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 
 @Data
 @AllArgsConstructor
@@ -21,5 +22,6 @@ public class Anime {
 
 //    @JsonProperty
     // utilizado para mapear do request para o atributo
+    @NotEmpty(message = "The anime name cannot be empty or null")
     private String name;
 }
