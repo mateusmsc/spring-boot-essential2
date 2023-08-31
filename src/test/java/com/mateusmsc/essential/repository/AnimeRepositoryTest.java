@@ -12,6 +12,8 @@ import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.Optional;
 
+import static com.mateusmsc.essential.util.AnimeSupport.createAnimeToBeSaved;
+
 @DataJpaTest
 @DisplayName("Tests for Anime repository")
 class AnimeRepositoryTest {
@@ -21,7 +23,7 @@ class AnimeRepositoryTest {
 
     @Test
     public void saveAnime() {
-        Anime anime = createAnime();
+        Anime anime = createAnimeToBeSaved();
         Anime savedAnime = animeRepository.save(anime);
 
         Assert.notNull(savedAnime, "Anime não foi salvo com sucesso.");
@@ -29,7 +31,7 @@ class AnimeRepositoryTest {
 
     @Test
     public void updateAnime() {
-        Anime anime = createAnime();
+        Anime anime = createAnimeToBeSaved();
         Anime savedAnime = animeRepository.save(anime);
 
         Assert.notNull(savedAnime, "Anime não foi salvo com sucesso.");
@@ -43,7 +45,7 @@ class AnimeRepositoryTest {
 
     @Test
     public void deleteAnime() {
-        Anime anime = createAnime();
+        Anime anime = createAnimeToBeSaved();
         Anime savedAnime = animeRepository.save(anime);
 
         Assert.notNull(savedAnime, "Anime não foi salvo com sucesso.");
@@ -57,7 +59,7 @@ class AnimeRepositoryTest {
 
     @Test
     public void findByNameAnime() {
-        Anime anime = createAnime();
+        Anime anime = createAnimeToBeSaved();
         Anime savedAnime = animeRepository.save(anime);
         String name = savedAnime.getName();
 
@@ -75,13 +77,5 @@ class AnimeRepositoryTest {
         Anime anime = new Anime();
 
         Assertions.assertThrows(ConstraintViolationException.class, () -> animeRepository.save(anime), "Exceção difere da esperada.");
-    }
-
-    private Anime createAnime() {
-        return Anime
-                .builder()
-                .name("Primeiro anime")
-                .build();
-
     }
 }

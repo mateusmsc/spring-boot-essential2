@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -26,29 +25,29 @@ public class AnimeController {
     //usar o final para entrar no "RequiredArgsConstructor"
     private final AnimeService animeService;
 
-//    @GetMapping
-//    public ResponseEntity<Page<Anime>> list(Pageable pegeable) {
+    @GetMapping
+    public ResponseEntity<Page<Anime>> list(Pageable pegeable) {
 //        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
-//        return ResponseEntity.ok(animeService.listAll(pegeable));
-//    }
+        return ResponseEntity.ok(animeService.listAll(pegeable));
+    }
 
     @GetMapping(path = "/all")
     public ResponseEntity<List<Anime>> listAll() {
-        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
+//        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
         return ResponseEntity.ok(animeService.listAllNonPageable());
     }
 
     @GetMapping(path = "/{id}")
     public ResponseEntity<Anime> findById(@PathVariable long id) {
-        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
+//        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
         return ResponseEntity.ok(animeService.findByIdOrThrowBadRequestException(id));
     }
 
     // Exemplo da URL
     // /animes/findByName?name=Dragon Ball GT
     @GetMapping(path = "/findByName")
-    public ResponseEntity<List<Anime>> findById(@RequestParam String name) {
-        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
+    public ResponseEntity<List<Anime>> findByName(@RequestParam String name) {
+//        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
         return ResponseEntity.ok(animeService.findByName(name));
     }
 
@@ -63,7 +62,7 @@ public class AnimeController {
     }
 
     @DeleteMapping(path = "/{id}")
-    public ResponseEntity<Void> save(@PathVariable long id) {
+    public ResponseEntity<Void> delete(@PathVariable long id) {
         animeService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
