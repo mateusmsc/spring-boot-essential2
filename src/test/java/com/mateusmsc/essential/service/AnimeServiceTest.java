@@ -1,9 +1,10 @@
-package com.mateusmsc.essential.controller;
+package com.mateusmsc.essential.service;
 
 import com.mateusmsc.essential.domain.Anime;
 import com.mateusmsc.essential.dto.AnimeDTO;
 import com.mateusmsc.essential.exception.BadRequestException;
-import com.mateusmsc.essential.service.AnimeService;
+import com.mateusmsc.essential.mapper.AnimeMapper;
+import com.mateusmsc.essential.repository.AnimeRepository;
 import com.mateusmsc.essential.util.AnimeSupport;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,50 +16,54 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
-// Utilizar o JUnit em vez de utilizarmos direto o BD do docker por exemplo
 @ExtendWith(SpringExtension.class)
-class AnimeControllerTest {
-    //@injectMocks : Utilizar quando queremos testar a classe em sí
-    //@Mock : Utilizar quando queremos testar com todas as classes injetadas
+class AnimeServiceTest {
+
     @InjectMocks
-    private AnimeController animeController;
+    private AnimeService animeService;
     @Mock
-    private AnimeService animeServiceMock;
+    private AnimeRepository animeRepositoryMock;
+    @Mock
+    private AnimeMapper animeMapperMock;
 
     @BeforeEach
     public void setup() {
         PageImpl<Anime> animePage = new PageImpl<>(List.of(AnimeSupport.createAnimeValid()));
         List<Anime> animeList = List.of(AnimeSupport.createAnimeValid());
 
-        BDDMockito.when(animeServiceMock.listAll(ArgumentMatchers.any()))
+        BDDMockito.when(animeRepositoryMock.findAll(ArgumentMatchers.any(PageRequest.class)))
                 .thenReturn(animePage);
 
-        BDDMockito.when(animeServiceMock.listAllNonPageable())
+        BDDMockito.when(animeRepositoryMock.findAll())
                 .thenReturn(animeList);
 
-        BDDMockito.when(animeServiceMock.findByIdOrThrowBadRequestException(ArgumentMatchers.anyLong()))
-                .thenReturn(AnimeSupport.createAnimeValid());
+        BDDMockito.when(animeRepositoryMock.findById(ArgumentMatchers.anyLong()))
+                .thenReturn(Optional.of(AnimeSupport.createAnimeValid()));
 
-        BDDMockito.when(animeServiceMock.findByName(ArgumentMatchers.anyString()))
+
+        BDDMockito.when(animeRepositoryMock.findByName(ArgumentMatchers.anyString()))
                 .thenReturn(animeList);
 
-        BDDMockito.when(animeServiceMock.save(ArgumentMatchers.any(AnimeDTO.class)))
+        BDDMockito.when(animeRepositoryMock.save(ArgumentMatchers.any(Anime.class)))
                 .thenReturn(AnimeSupport.createAnimeValid());
 
-        BDDMockito.doNothing().when(animeServiceMock).replace(ArgumentMatchers.any(AnimeDTO.class));
+        BDDMockito.doNothing().when(animeRepositoryMock).delete(ArgumentMatchers.any(Anime.class));
 
-        BDDMockito.doNothing().when(animeServiceMock).delete(ArgumentMatchers.anyLong());
+        BDDMockito.when(animeMapperMock.toAnime(ArgumentMatchers.any(AnimeDTO.class)))
+                .thenReturn(AnimeSupport.createAnimeValid());
     }
 
     @Test
     void listAll() {
-        Page<Anime> animePage = animeController.list(null).getBody();
+        Page<Anime> animePage = animeService.listAll(PageRequest.of(1, 1));
 
         Assertions.assertNotNull(animePage, "Animes deveria retornar uma lista.");
         Assertions.assertEquals(1, animePage.toList().size(), "Tamanho da lista difere do experado.");
@@ -67,7 +72,7 @@ class AnimeControllerTest {
 
     @Test
     void listAllNonPageable() {
-        List<Anime> animeList = animeController.listAll().getBody();
+        List<Anime> animeList = animeService.listAllNonPageable();
 
         Assertions.assertNotNull(animeList, "Animes deveria retornar uma lista.");
         Assertions.assertEquals(1, animeList.size(), "Tamanho da lista difere do experado.");
@@ -76,7 +81,7 @@ class AnimeControllerTest {
 
     @Test
     void findById() {
-        Anime anime = animeController.findById(1L).getBody();
+        Anime anime = animeService.findByIdOrThrowBadRequestException(1L);
 
         Assertions.assertNotNull(anime, "Animes deveria retornar uma lista.");
         Assertions.assertEquals("Primeiro anime", anime.getName(), "Nome do anime difere do esperado");
@@ -84,7 +89,7 @@ class AnimeControllerTest {
 
     @Test
     void findByName() {
-        List<Anime> animeListByName = animeController.findByName("name").getBody();
+        List<Anime> animeListByName = animeService.findByName("name");
 
         Assertions.assertNotNull(animeListByName, "Animes deveria retornar uma lista.");
         Assertions.assertEquals(1, animeListByName.size(), "Tamanho da lista difere do experado.");
@@ -93,10 +98,10 @@ class AnimeControllerTest {
 
     @Test
     void tryFindByName() {
-        BDDMockito.when(animeServiceMock.findByName(ArgumentMatchers.anyString()))
+        BDDMockito.when(animeRepositoryMock.findByName(ArgumentMatchers.anyString()))
                 .thenReturn(Collections.emptyList());
 
-        List<Anime> animeListByName = animeController.findByName("name").getBody();
+        List<Anime> animeListByName = animeService.findByName("name");
 
         Assertions.assertNotNull(animeListByName, "Animes deveria retornar uma lista.");
         Assertions.assertTrue(animeListByName.isEmpty(),"Lista de animes deveria está vazia");
@@ -106,42 +111,33 @@ class AnimeControllerTest {
     void save() {
         AnimeDTO animeDTO = new AnimeDTO();
         animeDTO.setName("Primeiro anime");
-        Anime anime = animeController.save(animeDTO).getBody();
+        Anime anime = animeService.save(animeDTO);
 
         Assertions.assertNotNull(anime, "Anime deveria ser salvo.");
         Assertions.assertEquals("Primeiro anime", anime.getName(),"Lista de animes deveria está vazia");
     }
 
     @Test
-    void trySaveWithoutAnimeName() {
-        BDDMockito.when(animeServiceMock.save(ArgumentMatchers.any(AnimeDTO.class)))
-                .thenThrow(BadRequestException.class);
-
-        AnimeDTO animeDTO = new AnimeDTO();
-        animeDTO.setName("");
-
-
-        Assertions.assertThrows(
-                BadRequestException.class,
-                ()-> animeController.save(animeDTO),
-        "Deveria tew lançado uma exceção");
-    }
-
-    @Test
     void updateAnime() {
         AnimeDTO animeDTO = new AnimeDTO();
-        animeDTO.setName("Primeiro anime");
-        ResponseEntity<Void> entity = animeController.replace(animeDTO);
+        animeDTO.setName("Segundo anime");
 
-        Assertions.assertNotNull(entity, "Anime deveria ser atualizado.");
+        Assertions.assertDoesNotThrow(() ->  animeService.save(animeDTO));
     }
 
     @Test
     void deleteAnime() {
-        AnimeDTO animeDTO = new AnimeDTO();
-        animeDTO.setName("Primeiro anime");
-        ResponseEntity<Void> entity = animeController.delete(1);
+        Assertions.assertDoesNotThrow(() ->  animeService.delete(1L));
+    }
 
-        Assertions.assertNotNull(entity, "Anime deveria ser atualizado.");
+    @Test
+    void tryFindByIdNotFound() {
+        BDDMockito.when(animeRepositoryMock.findById(ArgumentMatchers.anyLong()))
+                .thenReturn(Optional.empty());
+
+        Assertions.assertThrows(
+                BadRequestException.class,
+                () -> animeService.findByIdOrThrowBadRequestException(1L),
+                "Deveria ter dado uma exceção");
     }
 }
