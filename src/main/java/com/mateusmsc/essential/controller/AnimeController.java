@@ -10,6 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -43,6 +46,16 @@ public class AnimeController {
         return ResponseEntity.ok(animeService.findByIdOrThrowBadRequestException(id));
     }
 
+    // Autenticado -> permite entrar no sistema
+    // Autorizado -> permite que vc acesse certos pontos do sistema
+    // Segunda anotation serve para que possamos pegar as informações de usuário logado
+    @GetMapping(path = "/auth/{id}")
+    public ResponseEntity<Anime> findByIdAuthMainUser(@PathVariable long id, @AuthenticationPrincipal UserDetails userDetails) {
+//        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
+        log.info(userDetails);
+        return ResponseEntity.ok(animeService.findByIdOrThrowBadRequestException(id));
+    }
+
     // Exemplo da URL
     // /animes/findByName?name=Dragon Ball GT
     @GetMapping(path = "/findByName")
@@ -57,6 +70,8 @@ public class AnimeController {
     // Com o @Valid ele valida todas as anotation que são colocadas no AnimeDTO
     // como por exemplo o NotNull
     @PostMapping
+    //Garante as roles do usuário para poder autenticar um endpoint
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Anime> save(@RequestBody @Valid AnimeDTO anime) {
         return new ResponseEntity<>(animeService.save(anime), HttpStatus.CREATED);
     }
