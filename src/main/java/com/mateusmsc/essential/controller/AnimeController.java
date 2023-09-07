@@ -4,6 +4,7 @@ import com.mateusmsc.essential.domain.Anime;
 import com.mateusmsc.essential.dto.AnimeDTO;
 import com.mateusmsc.essential.service.AnimeService;
 import com.mateusmsc.essential.util.DateUtil;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
@@ -29,7 +30,7 @@ public class AnimeController {
     private final AnimeService animeService;
 
     @GetMapping
-    public ResponseEntity<Page<Anime>> list(Pageable pegeable) {
+    public ResponseEntity<Page<Anime>> list(@Parameter(hidden = true) Pageable pegeable) {
 //        log.info(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()));
         return ResponseEntity.ok(animeService.listAll(pegeable));
     }
